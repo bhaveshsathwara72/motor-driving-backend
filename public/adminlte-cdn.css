@@ -1,0 +1,17 @@
+/* Custom AdminLTE CSS */
+/* This file replaces the missing adminlte-cdn.css */
+
+/* Import core AdminLTE CSS */
+@import url('/vendor/adminlte/dist/css/adminlte.min.css');
+
+/* Import Font Awesome */
+@import url('/vendor/fontawesome-free/css/all.min.css');
+
+/* Import DataTables CSS */
+@import url('/vendor/datatables/dataTables.bootstrap4.min.css');
+
+/* Import DataTables Buttons CSS */
+@import url('https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap4.min.css');
+
+/* Import DataTables Responsive CSS */
+@import url('https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap4.min.css');
