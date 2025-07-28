@@ -21,7 +21,7 @@ class AttendanceController extends Controller
         // Validate request data
         $validator = Validator::make($request->all(), [
             'booking_id' => 'required|exists:bookings,id',
-            'driver_id' => 'nullable|exists:drivers,id',
+            'driver_id' => 'required|exists:drivers,id',
             'date' => 'required|date',
             'time' => 'required',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -129,7 +129,7 @@ class AttendanceController extends Controller
         // Validate request data
         $validator = Validator::make($request->all(), [
             'booking_id' => 'sometimes|required|exists:bookings,id',
-            'driver_id' => 'sometimes|nullable|exists:drivers,id',
+            'driver_id' => 'sometimes|required|exists:drivers,id',
             'date' => 'sometimes|required|date',
             'time' => 'sometimes|required',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',

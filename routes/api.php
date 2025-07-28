@@ -60,6 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Package API Routes
     Route::post('/packages', [PackageController::class, 'createPackage']);
     Route::get('/packages', [PackageController::class, 'getPackages']);
+    Route::get('/packages/vehicle/{vehicleId}', [PackageController::class, 'getPackagesByVehicle']);
     Route::get('/packages/{id}', [PackageController::class, 'getPackage']);
     Route::put('/packages/{id}', [PackageController::class, 'updatePackage']);
     Route::delete('/packages/{id}', [PackageController::class, 'deletePackage']);

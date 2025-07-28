@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Package;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -168,4 +169,44 @@ class PackageController extends Controller
             'data' => null
         ]);
     }
+    
+    /**
+     * Get packages by vehicle ID.
+     *
+     * @param  int  $vehicleId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    // public function getPackagesByVehicle($vehicleId)
+    // {
+    //     $packages = Package::with('vehicle')
+    //         ->where('vehicle_id', $vehicleId)
+    //         ->get();
+        
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Packages vehicle list retrieved successfully',
+    //         'data' => $packages
+    //     ]);
+    // }
+
+    public function getPackagesByVehicle($vehicleId)
+{
+    $vehicle = Vehicle::with('packages')->find($vehicleId);
+
+    if (!$vehicle) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Vehicle not found',
+            'data' => null
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Vehicle with packages retrieved successfully',
+        'data' => $vehicle
+    ]);
+}
+
 }
