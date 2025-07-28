@@ -85,7 +85,7 @@ class PackageController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Package retrieved successfully',
+            'message' => 'Package details retrieved successfully',
             'data' =>$package
         ]);
     }
