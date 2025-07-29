@@ -194,51 +194,99 @@ class BookingController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\JsonResponse
      */
+    // public function getBookingDetail($id)
+    // {
+    //     $booking = Booking::with([
+    //         'customer', 
+    //         'package', 
+    //         'package.vehicle'
+    //     ])->find($id);
+
+    //     if (!$booking) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Booking not found',
+    //             'data' => null
+    //         ], 404);
+    //     }
+
+    //     // Get attendances for this booking
+    //     $attendances = Attendance::where('booking_id', $id)
+    //         ->orderBy('date', 'desc')
+    //         ->orderBy('time', 'desc')
+    //         ->get();
+
+    //     // Get transactions (payments) for this booking
+    //     $transactions = Transaction::where('booking_id', $id)
+    //         ->orderBy('date', 'desc')
+    //         ->get();
+
+    //     // Format the response with separate sections for booking details, attendances, and transactions
+    //     $response = [
+    //         'booking' => $booking,
+    //         'attendances' => $attendances,
+    //         'transactions' => $transactions,
+    //         // Calculate some summary information
+    //         'summary' => [
+    //             'total_attendances' => $attendances->count(),
+    //             'total_paid' => $transactions->sum('amount'),
+    //             'package_price' => $booking->package->price ?? 0,
+    //             'remaining_balance' => ($booking->package->price ?? 0) - $transactions->sum('amount')
+    //         ]
+    //     ];
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Booking details retrieved successfully',
+    //         'data' => $response 
+    //     ]);
+    // }
+
+
     public function getBookingDetail($id)
-    {
-        $booking = Booking::with([
-            'customer', 
-            'package', 
-            'package.vehicle'
-        ])->find($id);
+{
+    $booking = Booking::with([
+        'customer', 
+        'package', 
+        'package.vehicle'
+    ])->find($id);
 
-        if (!$booking) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Booking not found',
-                'data' => null
-            ], 404);
-        }
-
-        // Get attendances for this booking
-        $attendances = Attendance::where('booking_id', $id)
-            ->orderBy('date', 'desc')
-            ->orderBy('time', 'desc')
-            ->get();
-
-        // Get transactions (payments) for this booking
-        $transactions = Transaction::where('booking_id', $id)
-            ->orderBy('date', 'desc')
-            ->get();
-
-        // Format the response with separate sections for booking details, attendances, and transactions
-        $response = [
-            'booking' => $booking,
-            'attendances' => $attendances,
-            'transactions' => $transactions,
-            // Calculate some summary information
-            'summary' => [
-                'total_attendances' => $attendances->count(),
-                'total_paid' => $transactions->sum('amount'),
-                'package_price' => $booking->package->price ?? 0,
-                'remaining_balance' => ($booking->package->price ?? 0) - $transactions->sum('amount')
-            ]
-        ];
-
+    if (!$booking) {
         return response()->json([
-            'status' => true,
-            'message' => 'Booking details retrieved successfully',
-            'data' => $response
-        ]);
+            'status' => false,
+            'message' => 'Booking not found',
+            'data' => null
+        ], 404);
     }
+
+    // Get attendances
+    $attendances = Attendance::where('booking_id', $id)
+        ->orderBy('date', 'desc')
+        ->orderBy('time', 'desc')
+        ->get();
+
+    // Get transactions
+    $transactions = Transaction::where('booking_id', $id)
+        ->orderBy('date', 'desc')
+        ->get();
+
+    // Merge all into a single-level array
+    $data = $booking->toArray(); // Convert booking (with relations) to array
+
+    $data['attendances'] = $attendances;
+    $data['transactions'] = $transactions;
+    $data['summary'] = [
+        'total_attendances' => $attendances->count(),
+        'total_paid' => $transactions->sum('amount'),
+        'package_price' => $booking->package->price ?? 0,
+        'remaining_balance' => ($booking->package->price ?? 0) - $transactions->sum('amount')
+    ];
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Booking details retrieved successfully',
+        'data' => $data
+    ]);
+}
+
 }
