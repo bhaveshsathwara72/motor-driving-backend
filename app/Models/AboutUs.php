@@ -23,7 +23,6 @@ class AboutUs extends Model
      * @var array<string>
      */
     protected $fillable = [
-        'licence_price',
         'about_phone_no_1',
         'about_phone_no_2',
         'address',
@@ -32,18 +31,6 @@ class AboutUs extends Model
         'about_image_2'
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'licence_price' => 'decimal:2',
-        ];
-    }
-    
     /**
      * Get the about_image_1 attribute with full URL.
      *

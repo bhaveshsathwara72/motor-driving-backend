@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('about_us', function (Blueprint $table) {
             $table->id();
-            $table->decimal('licence_price', 10, 2);
             $table->string('about_phone_no_1');
             $table->string('about_phone_no_2')->nullable();
             $table->text('address');

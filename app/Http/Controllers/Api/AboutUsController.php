@@ -15,7 +15,7 @@ class AboutUsController extends Controller
     public function createAboutUs(Request $request)
     {
         $rules = [
-            'licence_price' => 'required|numeric|min:0',
+          
             'about_phone_no_1' => 'required|string|max:15|unique:about_us',
             'about_phone_no_2' => 'nullable|string|max:15|unique:about_us',
             'address' => 'required|string',
@@ -60,7 +60,6 @@ class AboutUsController extends Controller
 
         // Create new record
         $aboutUs = AboutUs::create([
-            'licence_price' => $request->licence_price,
             'about_phone_no_1' => $request->about_phone_no_1,
             'about_phone_no_2' => $request->about_phone_no_2,
             'address' => $request->address,
@@ -81,13 +80,13 @@ class AboutUsController extends Controller
     }
 
     /**
-     * Retrieve all About Us information.
+     * Retrieve a single About Us record (the latest one).
      */
     public function getAboutUs()
     {
-        $aboutUs = AboutUs::all();
+        $aboutUs = AboutUs::latest()->first();
 
-        if ($aboutUs->isEmpty()) {
+        if (!$aboutUs) {
             return response()->json([
                 'status' => false,
                 'message' => 'About us information not found',
@@ -95,13 +94,38 @@ class AboutUsController extends Controller
             ], 404);
         }
         
-        // Make sure each AboutUs instance has its accessors applied
-        $aboutUs = $aboutUs->map(function ($item) {
-            // Force the accessors to be applied by accessing the attributes
-            $item->about_image_1 = $item->about_image_1;
-            $item->about_image_2 = $item->about_image_2;
-            return $item;
-        });
+        // Force the accessors to be applied by accessing the attributes
+        $aboutUs->about_image_1 = $aboutUs->about_image_1;
+        $aboutUs->about_image_2 = $aboutUs->about_image_2;
+
+        return response()->json([
+            'status' => true,
+            'message' => 'About us information retrieved successfully',
+            'data' => $aboutUs
+        ]);
+    }
+
+    /**
+     * Retrieve a specific About Us record by ID.
+     * 
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAboutUsById($id)
+    {
+        $aboutUs = AboutUs::find($id);
+
+        if (!$aboutUs) {
+            return response()->json([
+                'status' => false,
+                'message' => 'About us information not found',
+                'data' => null
+            ], 404);
+        }
+        
+        // Force the accessors to be applied by accessing the attributes
+        $aboutUs->about_image_1 = $aboutUs->about_image_1;
+        $aboutUs->about_image_2 = $aboutUs->about_image_2;
 
         return response()->json([
             'status' => true,
@@ -130,9 +154,8 @@ class AboutUsController extends Controller
         }
 
         $rules = [
-            'licence_price' => 'sometimes|required|numeric|min:0',
-            'about_phone_no_1' => 'sometimes|required|string|max:15|unique:about_us',
-            'about_phone_no_2' => 'nullable|string|max:15|unique:about_us',
+            'about_phone_no_1' => 'sometimes|required|string|max:15|unique:about_us,about_phone_no_1,' . $id,
+            'about_phone_no_2' => 'nullable|string|max:15|unique:about_us,about_phone_no_2,' . $id,
             'address' => 'sometimes|required|string',
             'opening_hours' => 'sometimes|required|string',
             'about_image_1' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -148,7 +171,6 @@ class AboutUsController extends Controller
             ], 422);
         }
 
-        if ($request->has('licence_price')) $aboutUs->licence_price = $request->licence_price;
         if ($request->has('about_phone_no_1')) $aboutUs->about_phone_no_1 = $request->about_phone_no_1;
         if ($request->has('about_phone_no_2')) $aboutUs->about_phone_no_2 = $request->about_phone_no_2;
         if ($request->has('address')) $aboutUs->address = $request->address;

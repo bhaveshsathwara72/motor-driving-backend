@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\AboutUsController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\LicenceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -90,6 +91,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // About Us API Routes
     Route::post('/about-us', [AboutUsController::class, 'createAboutUs']);
     Route::get('/about-us', [AboutUsController::class, 'getAboutUs']);
+    Route::get('/about-us/{id}', [AboutUsController::class, 'getAboutUsById']);
     Route::put('/about-us/{id}', [AboutUsController::class, 'updateAboutUs']);
     Route::delete('/about-us/{id}', [AboutUsController::class, 'deleteAboutUs']);
+    
+    // Licence API Routes
+    Route::post('/licences', [LicenceController::class, 'createLicence']);
+    Route::get('/licences', [LicenceController::class, 'getLicences']);
+    Route::get('/licences/{id}', [LicenceController::class, 'getLicence']);
+    Route::put('/licences/{id}', [LicenceController::class, 'updateLicence']);
+    Route::delete('/licences/{id}', [LicenceController::class, 'deleteLicence']);
 });
