@@ -9,6 +9,7 @@ use App\Models\Attendance;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class BookingController extends Controller
 {
@@ -287,6 +288,142 @@ class BookingController extends Controller
         'message' => 'Booking details retrieved successfully',
         'data' => $data
     ]);
+}
+
+/**
+ * Filter bookings by date or month.
+ * Automatically detects format:
+ * - dd-mm-yyyy: Filter by specific day
+ * - mm-yyyy: Filter by month and year
+ *
+ * @param  \Illuminate\Http\Request  $request
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function filterBookings(Request $request)
+{
+    // Validate request data
+    $validator = Validator::make($request->all(), [
+        'date_filter' => 'required|string',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Validation failed',
+            'errors' => $validator->errors()
+        ], 422);
+    }
+
+    $dateFilter = $request->date_filter;
+    $user = $request->user();
+    
+    // Base query with relationships
+    $query = Booking::with(['customer', 'package', 'package.vehicle']);
+    
+    // Check the format of the date_filter parameter
+    if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $dateFilter)) {
+        // Format: dd-mm-yyyy - Filter by specific day
+        try {
+            // Parse the input date
+            $carbonDate = Carbon::createFromFormat('d-m-Y', $dateFilter);
+            // Format for SQL query
+            $date = $carbonDate->format('Y-m-d');
+            // Use raw SQL for date comparison to ensure proper format matching
+            $query->whereRaw('DATE(joining_date) = ?', [$date]);
+            $message = 'Bookings filtered by day successfully';
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid date format. Please use dd-mm-yyyy for day filtering.',
+                'data' => null
+            ], 422);
+        }
+    } elseif (preg_match('/^\d{2}-\d{4}$/', $dateFilter)) {
+        // Format: mm-yyyy - Filter by month and year
+        try {
+            $parts = explode('-', $dateFilter);
+            $month = (int)$parts[0];
+            $year = (int)$parts[1];
+            
+            if ($month < 1 || $month > 12) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid month. Month must be between 1 and 12.',
+                    'data' => null
+                ], 422);
+            }
+            
+            // Use raw SQL for more reliable date filtering
+            $query->whereRaw('YEAR(joining_date) = ? AND MONTH(joining_date) = ?', [$year, $month]);
+            $message = 'Bookings filtered by month successfully';
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid date format. Please use mm-yyyy for month filtering.',
+                'data' => null
+            ], 422);
+        }
+    } else {
+        return response()->json([
+            'status' => false,
+            'message' => 'Invalid date format. Please use dd-mm-yyyy for day filtering or mm-yyyy for month filtering.',
+            'data' => null
+        ], 422);
+    }
+    
+    // If user is a customer, only show their bookings
+    if ($user instanceof \App\Models\Customer) {
+        $query->where('customer_id', $user->id);
+    }
+    
+    try {
+        // Execute the query
+        $bookings = $query->get();
+        
+        // Get booking IDs to fetch related data
+        $bookingIds = $bookings->pluck('id')->toArray();
+        
+        // Get total payments for these bookings
+        $totalPayments = Transaction::whereIn('booking_id', $bookingIds)
+            ->sum('amount');
+            
+        // Get total attendances for these bookings
+        $totalAttendances = Attendance::whereIn('booking_id', $bookingIds)
+            ->count();
+        
+        // Calculate total package price
+        $totalPackagePrice = 0;
+        foreach ($bookings as $booking) {
+            $totalPackagePrice += $booking->package->price ?? 0;
+        }
+        
+        // Calculate remaining balance
+        $remainingBalance = $totalPackagePrice - $totalPayments;
+        
+        
+        // Prepare response data with summary
+        $responseData = [
+            'bookings' => $bookings,
+            'summary' => [
+                'total_bookings' => count($bookings),
+                'total_attendances' => $totalAttendances,
+                'total_package_price' => $totalPackagePrice,
+                'total_paid' => $totalPayments,
+                'remaining_balance' => $remainingBalance
+            ]
+        ];
+        
+        return response()->json([
+            'status' => true,
+            'message' => $message,
+            'data' => $responseData
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Error executing query: ' . $e->getMessage()
+        ], 500);
+    }
 }
 
 }

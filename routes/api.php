@@ -69,6 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Booking API Routes
     Route::post('/bookings', [BookingController::class, 'createBooking']);
     Route::get('/bookings', [BookingController::class, 'getBookings']);
+    Route::post('/bookings/filter', [BookingController::class, 'filterBookings']);
     Route::get('/bookings/{id}', [BookingController::class, 'getBooking']);
     Route::get('/bookings/{id}/detail', [BookingController::class, 'getBookingDetail']);
     Route::put('/bookings/{id}', [BookingController::class, 'updateBooking']);
