@@ -377,6 +377,12 @@ return [
             ],
         ],
         ['header' => 'labels'],
+        // [
+        //     'text' => 'About Us',
+        //     'url' => 'about-us',
+        //     'icon' => 'fas fa-fw fa-info-circle',
+        //     'icon_color' => 'blue',
+        // ],
         [
             'text' => 'important',
             'icon_color' => 'red',

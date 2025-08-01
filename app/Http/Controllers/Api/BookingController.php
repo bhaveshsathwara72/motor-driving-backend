@@ -380,6 +380,12 @@ public function filterBookings(Request $request)
         // Execute the query
         $bookings = $query->get();
         
+        // Calculate pending amount for each booking
+        $bookings->map(function($booking) {
+            $booking->pending_amount = ($booking->package->price ?? 0) - $booking->transactions()->sum('amount');
+            return $booking;
+        });
+        
         // Get booking IDs to fetch related data
         $bookingIds = $bookings->pluck('id')->toArray();
         
